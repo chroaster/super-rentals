@@ -8,6 +8,8 @@ export default function() {
     Note: these only affect routes defined *after* them!
    */
 
+  this.passthrough('http://api.openweathermap.org/**');
+
   this.namespace = '/api';
   let rentals = [
     {
