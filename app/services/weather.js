@@ -12,22 +12,23 @@ export default Ember.Service.extend({
     }
   },
 
-  getTemperatureElement(location) {
-    let element = this.createWeatherElement();
+  getTemperaturePromise(location) {
+    let currentTemp = null;
     let camelizedLocation = location.camelize();
     let weatherJson = this.get(`cachedWeather.${camelizedLocation}`);
     if (!weatherJson) {
-      Ember.$.getJSON(`http://api.openweathermap.org/data/2.5/weather?q=${location}&APPID=${apiKey}`).then(function(json) {
-        weatherJson = json;
-        let currentTemp = kelvinToCelsius(json.main.temp).toFixed(0);
-        element.append(currentTemp + 'C');
+      let promise = new Ember.RSVP.Promise((resolve)=> {
+        Ember.$.getJSON(`http://api.openweathermap.org/data/2.5/weather?q=${location}&APPID=${apiKey}`).then(function(json) {
+          weatherJson = json;
+          currentTemp = kelvinToCelsius(json.main.temp).toFixed(0);
+          resolve(currentTemp + 'C');
+        });
       });
       this.set(`cachedWeather.${camelizedLocation}`, weatherJson);
-      return element;
+      return promise;
     } else {
-      let currentTemp = kelvinToCelsius(weatherJson.main.temp).toFixed(0);
-      element.append(currentTemp + 'C');
-      return element;
+      currentTemp = kelvinToCelsius(weatherJson.main.temp).toFixed(0);
+      return new Ember.RSVP.Promise((resolve)=>{resolve(currentTemp + 'C')});
     }
   },
 
